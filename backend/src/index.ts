@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import express from 'express'
 import {prisma }from '../packages/db/index.js'
 import  cors from 'cors'
@@ -8,14 +9,22 @@ app.use(express.json())
 
 app.post('/add', async (req,res)=>{
     const {name , age} :{name:string, age:number} = req.body
-    const newUser = await prisma.user.create({
-  data: {
-    name: name,
-    age: age
-  },
-})
-console.log(newUser);
-res.json({message:"user added!"})
+  
+    try{
+     const newUser = await prisma.user.create({
+      data: {
+        name: name,
+        age: age
+      },
+     
+    })
+
+    res.json({message:"user added!"})
+  }catch (e: any) {
+    console.dir(e.meta?.driverAdapterError, { depth: null });
+  }
+
+
 
 })
 

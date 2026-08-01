@@ -41,9 +41,5 @@
     "skipLibCheck": true,
   },
  
-  "exclude": [
-    "packages/db/prisma.config.ts",
-   
-    "dist"
-  ]
+ 
 }
