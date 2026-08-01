@@ -27,7 +27,15 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+      
+      <div className="w-screen flex justify-center text-red-500">
+        this is a payments app !
+      </div>
+
+      {children}
+      </body>
+     
     </html>
   );
 }
