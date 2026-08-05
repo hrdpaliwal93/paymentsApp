@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import jwt  from 'jsonwebtoken'
 import express from 'express'
 import { prisma } from '../packages/db/index.js'
 import cors from 'cors'
@@ -28,12 +29,12 @@ app.post('/signup', async (req, res) => {
         if(user) {res.json({message:"username already exists"});return ;}
 
         //getting user password and hashing it before saving to db !
-        const hashedpassword = b.hash(password, 10)
+        const hashedpassword = await b.hash(password, 10) 
         await prisma.user.create({
           data: {
             username,
             email,
-            password: hashedpassword
+            password: hashedpassword 
           }
         })
 
@@ -49,7 +50,23 @@ app.post('/signup', async (req, res) => {
 })
 
 
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
+  const {username, password} = req.body
+
+  //find hashed password, compare?generate jwt : password incorrect
+
+  const user = await prisma.user.findFirst({where:{username}}) 
+  if(!user) {res.json({message:"user does not exists, try signup first"}); return ;}
+
+  const valid = await b.compare(password, user.password)
+  if(valid){
+    //generate jwt
+    const token = await jwt.sign(user.id, "hardikisacooldude.")
+    res.json({message:"logged in", token:token})
+
+
+  }else {res.json({message:"incorrect password"}); return ;}
 
 })
+
 app.listen(8000)
