@@ -1,33 +1,43 @@
 import 'dotenv/config'
 import express from 'express'
-import {prisma }from '../packages/db/index.js'
-import  cors from 'cors'
+import { prisma } from '../packages/db/index.js'
+import cors from 'cors'
+import z, { maxLength, string } from 'zod'
+import b from 'bcrypt'
 const app = express()
 app.use(cors())
 app.use(express.json())
 
 
-app.post('/add', async (req,res)=>{
-    const {name , age} :{name:string, age:number} = req.body
-  
-    try{
-     const newUser = await prisma.user.create({
+app.post('/signup', async (req, res) => {
+  const inputUser = z.object({
+    username :z.string,
+    email :  z.email,
+    password : z.mi
+  })
+  const { email, username, password } = req.body
+  try {
+    const user = await prisma.user.create({
       data: {
-        name: name,
-        age: age
-      },
-     
+        username,
+        email,
+        password
+      }
     })
 
-    res.json({message:"user added!"})
-  }catch (e: any) {
-    console.dir(e.meta?.driverAdapterError, { depth: null });
+    res.json({
+      message:"signup successful",
+      success:true
+    })
+
+  } catch (e) {
+    console.error(e)
+   
   }
-
-
-
 })
 
 
+app.post('/login', (req,res)=>{
 
+})
 app.listen(8000)
