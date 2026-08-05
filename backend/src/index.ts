@@ -21,7 +21,7 @@ app.post('/signup', async (req, res) => {
   if (!success) { res.json({ message: "invalid input format", error: error.message }); return; }
 
 
-  const { username, email, password } = req.body
+  const { username, email, password } = data
   try {
         //checking if the username already exixts or not!
         const user = await prisma.user.findFirst({where:{username:username}})
@@ -51,7 +51,14 @@ app.post('/signup', async (req, res) => {
 
 
 app.post('/login', async (req, res) => {
-  const {username, password} = req.body
+  const userinput = z.object({
+    username: z.string(),
+    password:z.string().min(3).max(8)
+  })
+  const {success, data, error} = userinput.safeParse(req.body)
+  if (!success) { res.json({ message: "invalid input format", error: error.message }); return; }
+
+  const {username, password} = data
 
   //find hashed password, compare?generate jwt : password incorrect
 
@@ -61,7 +68,7 @@ app.post('/login', async (req, res) => {
   const valid = await b.compare(password, user.password)
   if(valid){
     //generate jwt
-    const token = await jwt.sign(user.id, "hardikisacooldude.")
+    const token =  jwt.sign(user.id, "hardikisacooldude.")
     res.json({message:"logged in", token:token})
 
 
@@ -69,4 +76,8 @@ app.post('/login', async (req, res) => {
 
 })
 
+app.post('/add', (req,res)=>{
+  
+
+})
 app.listen(8000)
