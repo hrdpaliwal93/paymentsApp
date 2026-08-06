@@ -1,7 +1,7 @@
 import 'dotenv/config'
-import jwt  from 'jsonwebtoken'
+import jwt from 'jsonwebtoken'
 import express from 'express'
-import { prisma } from '../packages/db/index.js'
+import  {prisma} from '../packages/db/index.js'
 import cors from 'cors'
 import z, { maxLength, string } from 'zod'
 import b from 'bcrypt'
@@ -24,25 +24,25 @@ app.post('/signup', async (req, res) => {
 
   const { username, email, password } = data
   try {
-        //checking if the username already exixts or not!
-        const user = await prisma.user.findFirst({where:{username:username}})
+    //checking if the username already exixts or not!
+    const user = await prisma.user.findFirst({ where: { username: username } })
 
-        if(user) {res.json({message:"username already exists"});return ;}
+    if (user) { res.json({ message: "username already exists" }); return; }
 
-        //getting user password and hashing it before saving to db !
-        const hashedpassword = await b.hash(password, 10) 
-        await prisma.user.create({
-          data: {
-            username,
-            email,
-            password: hashedpassword 
-          }
-        })
+    //getting user password and hashing it before saving to db !
+    const hashedpassword = await b.hash(password, 10)
+    await prisma.user.create({
+      data: {
+        username,
+        email,
+        password: hashedpassword
+      }
+    })
 
-        res.json({
-          message: "signup successful",
-          success: true
-        })
+    res.json({
+      message: "signup successful",
+      success: true
+    })
 
   } catch (e) {
     console.error(e)
@@ -54,35 +54,52 @@ app.post('/signup', async (req, res) => {
 app.post('/login', async (req, res) => {
   const userinput = z.object({
     username: z.string(),
-    password:z.string().min(3).max(8)
+    password: z.string().min(3).max(8)
   })
-  const {success, data, error} = userinput.safeParse(req.body)
+  const { success, data, error } = userinput.safeParse(req.body)
   if (!success) { res.json({ message: "invalid input format", error: error.message }); return; }
 
-  const {username, password} = data
+  const { username, password } = data
 
   //find hashed password, compare?generate jwt : password incorrect
 
-  const user = await prisma.user.findFirst({where:{username}}) 
-  if(!user) {res.json({message:"user does not exists, try signup first"}); return ;}
+  try {
+    const user = await prisma.user.findFirst({ where: { username } })
+    if (!user) { res.json({ message: "user does not exists, try signup first" }); return; }
 
-  const valid = await b.compare(password, user.password)
-  if(valid){
-    //generate jwt
-    const token =  jwt.sign(user.id, "hardikisacooldude.")
-    res.json({message:"logged in", token:token})
+    const valid = await b.compare(password, user.password)
+    if (valid) {
+      //generate jwt
+      const token = jwt.sign(user.id, "hardikisacooldude.")
+      res.json({ message: "logged in", token: token })
 
 
-  }else {res.json({message:"incorrect password"}); return ;}
+    } else { res.json({ message: "incorrect password" }); return; }
+
+  } catch (e) { console.error(e) }
 
 })
 
-app.post('/add', Auth,  (req,res)=>{
+app.post('/add', Auth, (req, res) => {
   const id = req.id;
-  
+
   //use the bank api to add money into wallet
-  
-  
+  const {amount} =  req.body
+  try {
+
+    setTimeout(async () => {
+     
+      const result = await prisma.user.update({ where: { id: `${id}` }, data: { balance: { increment: amount } } })
+
+      if (result) { res.json({ message: "balance updated successfully" }) }
+
+    }, 5000);
+
+
+  } catch (e) {
+    console.error(e)
+  }
+
 
 })
 app.listen(8000)
