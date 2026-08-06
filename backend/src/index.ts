@@ -5,6 +5,7 @@ import { prisma } from '../packages/db/index.js'
 import cors from 'cors'
 import z, { maxLength, string } from 'zod'
 import b from 'bcrypt'
+import Auth from '../middlewares/auth.js'
 const app = express()
 app.use(cors())
 app.use(express.json())
@@ -76,7 +77,11 @@ app.post('/login', async (req, res) => {
 
 })
 
-app.post('/add', (req,res)=>{
+app.post('/add', Auth,  (req,res)=>{
+  const id = req.id;
+  
+  //use the bank api to add money into wallet
+  
   
 
 })
