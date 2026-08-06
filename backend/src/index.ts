@@ -21,7 +21,6 @@ app.post('/signup', async (req, res) => {
   const { success, data, error } = inputUser.safeParse(req.body)
   if (!success) { res.json({ message: "invalid input format", error: error.message }); return; }
 
-
   const { username, email, password } = data
   try {
     //checking if the username already exixts or not!
@@ -49,8 +48,6 @@ app.post('/signup', async (req, res) => {
 
   }
 })
-
-
 app.post('/login', async (req, res) => {
   const userinput = z.object({
     username: z.string(),
@@ -60,9 +57,6 @@ app.post('/login', async (req, res) => {
   if (!success) { res.json({ message: "invalid input format", error: error.message }); return; }
 
   const { username, password } = data
-
-  //find hashed password, compare?generate jwt : password incorrect
-
   try {
     const user = await prisma.user.findFirst({ where: { username } })
     if (!user) { res.json({ message: "user does not exists, try signup first" }); return; }
@@ -86,21 +80,13 @@ app.post('/add', Auth, async (req, res) => {
   //use the bank api to add money into wallet
   const {amount} =  req.body
   try {
-
-
-     
       const result = await prisma.user.update({ where: { id: `${id}` }, data: { balance: { increment: amount } } })
 
       if (result) { res.json({ message: "balance updated successfully" }) }
 
-
-
-
   } catch (e) {
     console.error(e)
   }
-
-
 })
 
 app.get('/balance', Auth, async  (req,res)=>{
@@ -111,7 +97,6 @@ app.get('/balance', Auth, async  (req,res)=>{
  }catch(e) {console.error(e)}
 
 })
-
 
 
 app.listen(8000)
