@@ -70,7 +70,7 @@ app.post('/login', async (req, res) => {
     const valid = await b.compare(password, user.password)
     if (valid) {
       //generate jwt
-      const token = jwt.sign(user.id, "hardikisacooldude.")
+      const token = jwt.sign(user.id, "hardikisacooldude.",{ expiresIn: '5m' })
       res.json({ message: "logged in", token: token })
 
 
@@ -80,20 +80,20 @@ app.post('/login', async (req, res) => {
 
 })
 
-app.post('/add', Auth, (req, res) => {
+app.post('/add', Auth, async (req, res) => {
   const id = req.id;
 
   //use the bank api to add money into wallet
   const {amount} =  req.body
   try {
 
-    setTimeout(async () => {
+
      
       const result = await prisma.user.update({ where: { id: `${id}` }, data: { balance: { increment: amount } } })
 
       if (result) { res.json({ message: "balance updated successfully" }) }
 
-    }, 5000);
+
 
 
   } catch (e) {
@@ -102,4 +102,16 @@ app.post('/add', Auth, (req, res) => {
 
 
 })
+
+app.get('/balance', Auth, async  (req,res)=>{
+  const id = req.id
+ try{
+  const user = await prisma.user.findFirst({where:{id:`${id}`}})
+  res.json({balance:user?.balance})
+ }catch(e) {console.error(e)}
+
+})
+
+
+
 app.listen(8000)
