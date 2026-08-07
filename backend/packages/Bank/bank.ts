@@ -22,9 +22,7 @@ app.post('/payments/transfer', (req,res)=>{
     // 7. Return success
     const {transactionid, amount, type, fromAccount, toAccount} = req.body
 
-   prisma.$transaction(
-    
-   )
+ 
 
     
 })
