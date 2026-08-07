@@ -113,5 +113,32 @@ app.get('/balance', Auth, async  (req,res)=>{
 })
 
 
+app.post('/withdraw', (req,res)=>{
+  const id = req.id
+  //user sends a withdraw request
+  //make a payout request to bank webhook with a trnscID , amount, and type
+  //wait for bank/gateway confirmation show pending untill
+  //if succeed, BEGIN a transaction for updation in DB
+/*
+Create transaction (PENDING)
+        ↓
+Get transaction ID
+        ↓
+Send ID to bank/gateway
+        ↓
+Receive webhook
+        ↓
+Update same transaction → SUCCESS / FAILED
+*/
+
+//"create first, update later" pattern is standard in payment systems.
+const user   = await prisma.user.
+
+})
+
+
+//withdraw
+//transfer -> directly via bank to smeone
+//payment - >waller to someone
 
 app.listen(8000)
