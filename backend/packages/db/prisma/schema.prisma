@@ -12,36 +12,46 @@ model User {
   email                String        @unique
   username             String        @unique
   password             String
-  walletBalance              Decimal       @default(0)
+  walletBalance        Decimal       @default(0)
   sendtransactions     Transaction[] @relation("sendtransaction")
   receivedtransactions Transaction[] @relation("receivedtransaction")
+  bankDetails          BankDetails[]
+  onrampTransactions   onrampTransactions[]
 }
 
 model Transaction {
-  id          String            @id @default(uuid())
+  id          String    @id @default(uuid())
   amount      Decimal
   description String?
-  senderid    String
-  receiverid  String
-  sender      User              @relation("sendtransaction", fields: [senderid], references: [id])
-  receiver    User              @relation("receivedtransaction", fields: [receiverid], references: [id])
-  createdAt   DateTime          @default(now())
-  type        Category
-  status      transactionStatus
+  sendername   String
+  receivername  String
+  createdAt   DateTime  @default(now())
+  type        Category?
+  status      String    @default("pending")
   reason      String?
+  sender      User      @relation("sendtransaction", fields: [sendername], references: [username])
+  receiver    User      @relation("receivedtransaction", fields: [receivername], references: [username])
 }
 
-model BankDetails{
 
-  accountNumber Int  @id
-  name String
-  balance Int   @default(10000)
-
-
+model onrampTransactions{
+  id    String  @id @default()
+  provider String
+  status String   @default("pending")
+  type   onramptypes
+  amount Decimal
+  userID String 
+  user User @relation(fields: [userID], references: [id])
+  
 }
-enum transactionStatus {
-  fail
-  success
+
+model BankDetails {
+  accountNumber Int    @id
+  userID        String
+  bankname      String
+  balance       Int    @default(10000)
+
+  user User @relation(fields: [userID], references: [id])
 }
 
 enum Category {
@@ -49,4 +59,8 @@ enum Category {
   bills
   personal
   misc
+}
+enum onramptypes{
+  add_money
+  withdraw
 }

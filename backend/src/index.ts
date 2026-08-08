@@ -1,11 +1,12 @@
 import 'dotenv/config'
 import jwt from 'jsonwebtoken'
 import express from 'express'
-import  {prisma} from '../packages/db/index.js'
+import { prisma } from '../packages/db/index.js'
 import cors from 'cors'
 import z, { maxLength, string } from 'zod'
 import b from 'bcrypt'
 import Auth from '../middlewares/auth.js'
+import axios from 'axios'
 const app = express()
 app.use(cors())
 app.use(express.json())
@@ -64,7 +65,7 @@ app.post('/login', async (req, res) => {
     const valid = await b.compare(password, user.password)
     if (valid) {
       //generate jwt
-      const token = jwt.sign(user.id, "hardikisacooldude.",{ expiresIn: '5m' })
+      const token = jwt.sign(user.id, "hardikisacooldude.", { expiresIn: '5m' })
       res.json({ message: "logged in", token: token })
 
 
@@ -78,48 +79,50 @@ app.post('/add', Auth, async (req, res) => {
   const id = req.id;
 
   //use the bank api to add money into wallet
-  const {amount} =  req.body
+  //send a debit request to bank, check bank balance, then receive the corrosponding confirmation via webhook
+  const { amount } = req.body
   try {
-      const result = await prisma.user.update({ where: { id: `${id}` }, data: { balance: { increment: amount } } })
 
-      if (result) { res.json({ message: "balance updated successfully" }) }
+    // const result = await prisma.user.update({ where: { id: `${id}` }, data: { walletBalance: { increment: amount } } })
+
+    // if (result) { res.json({ message: "balance updated successfully" }) }
+  
 
   } catch (e) {
     console.error(e)
   }
 })
 
-app.get('/balance', Auth, async  (req,res)=>{
+app.get('/balance', Auth, async (req, res) => {
   const id = req.id
- try{
-  const user = await prisma.user.findFirst({where:{id:`${id}`}})
-  res.json({balance:user?.balance})
- }catch(e) {console.error(e)}
+  try {
+    const user = await prisma.user.findFirst({ where: { id: `${id}` } })
+    res.json({ walletbalance: user?.walletBalance })
+  } catch (e) { console.error(e) }
 
 })
 
 
-<<<<<<< HEAD
-app.post('/withdraw', (req,res)=>{
+app.post('/withdraw', (req, res) => {
   const id = req.id
   //user sends a withdraw request
   //make a payout request to bank webhook with a trnscID , amount, and type
   //wait for bank/gateway confirmation show pending untill
   //if succeed, BEGIN a transaction for updation in DB
-/*
-Create transaction (PENDING)
-        ↓
-Get transaction ID
-        ↓
-Send ID to bank/gateway
-        ↓
-Receive webhook
-        ↓
-Update same transaction → SUCCESS / FAILED
-*/
+  /*
+  Create transaction (PENDING)
+          ↓
+  Get transaction ID
+          ↓
+  Send ID to bank/gateway
+          ↓
+  Receive webhook
+          ↓
+  Update same transaction → SUCCESS / FAILED
+  */
 
-//"create first, update later" pattern is standard in payment systems.
-const user   = await prisma.user.
+  //"create first, update later" pattern is standard in payment systems.
+
 
 })
 
@@ -128,7 +131,18 @@ const user   = await prisma.user.
 //transfer -> directly via bank to smeone
 //payment - >waller to someone
 
+
+app.post('/transfer',async  (req,res)=>{
+  const id = req.id
+  const {amount, description, receivername}  =req.body
+  const validreceiver = await prisma.user.findFirst({where:{username:receivername}})
+  const sender = await prisma.user.findFirst({where:{id:id}})
+  if(!validreceiver){res.json({message:"user does not exists"}); return;}
+
+  if(sender?.walletBalance < amount){
+    res.json({message:"insufficient balance"}); return;
+  }
+
+})
+
 app.listen(8000)
-=======
-app.listen(8000)
->>>>>>> 1dd2fb626814138556762f7ad4712f7eff9ca0d9
